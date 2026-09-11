@@ -1,0 +1,35 @@
+# Geneformer model configuration
+# Reference: Theodoris et al., "Transfer learning enables predictions in network
+# biology", Nature 2023.
+
+model:
+  name: "geneformer"
+  type: "encoder_only"
+
+  # Architecture (12-layer & 20-layer variants)
+  variant: "12L"               # "12L" | "20L"
+  n_layers: 12
+  n_heads: 12
+  embed_dim: 768
+  hidden_dim: 3072
+  vocab_size: 25426            # gene vocabulary (Ensembl IDs)
+  max_seq_len: 2048
+
+  # Input encoding
+  rank_genes: true             # input is rank-encoded gene expression
+  max_rank: 2048
+
+  # Checkpoint
+  checkpoint_path: null
+  checkpoint_repo: "ctheodoris/Geneformer-12L-30M-i2048"
+
+  # Inference defaults
+  batch_size: 32
+  dtype: "float16"
+
+  # Supported optimizations
+  supported_optimizations:
+    - "quantization"
+    - "flash_attention"
+    - "torch_compile"
+    - "batch_scheduling"

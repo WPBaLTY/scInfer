@@ -1,0 +1,131 @@
+# 消融实验配置
+# 单独评估每个因素对量化质量的影响
+# 对应论文 Figure 3 的补充分析
+
+experiment:
+  name: "ablation_study"
+  description: "消融实验：分别评估校准数据、量化位宽、量化方法对生物学保真度的影响"
+  output_dir: "results/quantization/ablation/"
+  seed: 42
+
+# ---------------------------------------------------------------------------
+# 消融实验定义
+# ---------------------------------------------------------------------------
+ablation:
+  # 实验 1：校准数据对量化质量的影响
+  - name: "calibration_data_impact"
+    description: "不同校准数据对量化质量的影响"
+    variable: calibration_dataset
+    values: [pbmc, pancreas, mixed, synthetic]
+    fixed:
+      model: geneformer
+      model_size: 316m
+      method: gptq
+      bits: 4
+    evaluation:
+      n_cells: 1000
+      metrics:
+        - embedding_cosine_similarity
+        - cell_type_f1
+        - knn_accuracy
+        - throughput
+        - model_size
+
+  # 实验 2：量化位宽的影响
+  - name: "bits_impact"
+    description: "量化位宽的影响（FP16 → INT8 → INT4 → INT2）"
+    variable: bits
+    values: [16, 8, 4, 2]
+    fixed:
+      model: geneformer
+      model_size: 316m
+      method: bitsandbytes
+      calibration_dataset: pbmc
+    evaluation:
+      n_cells: 1000
+      metrics:
+        - embedding_cosine_similarity
+        - cell_type_f1
+        - knn_accuracy
+        - throughput
+        - latency
+        - model_size
+        - peak_memory
+
+  # 实验 3：不同量化方法的对比
+  - name: "method_comparison"
+    description: "不同量化方法的对比（BitsAndBytes vs GPTQ vs AWQ）"
+    variable: method
+    values: [bitsandbytes, gptq, awq]
+    fixed:
+      model: geneformer
+      model_size: 316m
+      bits: 4
+      calibration_dataset: pbmc
+    evaluation:
+      n_cells: 1000
+      metrics:
+        - embedding_cosine_similarity
+        - cell_type_f1
+        - knn_accuracy
+        - throughput
+        - latency
+        - model_size
+        - peak_memory
+
+  # 实验 4：校准样本数量的影响
+  - name: "calibration_size_impact"
+    description: "校准样本数量对量化质量的影响"
+    variable: n_calibration_samples
+    values: [16, 32, 64, 128, 256, 512]
+    fixed:
+      model: geneformer
+      model_size: 316m
+      method: gptq
+      bits: 4
+      calibration_dataset: pbmc
+    evaluation:
+      n_cells: 1000
+      metrics:
+        - embedding_cosine_similarity
+        - cell_type_f1
+        - knn_accuracy
+
+  # 实验 5：不同模型规模的量化效果
+  - name: "model_size_impact"
+    description: "不同模型规模对量化鲁棒性的影响"
+    variable: model_size
+    values: [10m, 38m, 316m]
+    fixed:
+      model: geneformer
+      method: gptq
+      bits: 4
+      calibration_dataset: pbmc
+    evaluation:
+      n_cells: 1000
+      metrics:
+        - embedding_cosine_similarity
+        - cell_type_f1
+        - knn_accuracy
+        - throughput
+        - model_size
+
+# ---------------------------------------------------------------------------
+# 通用评估参数
+# ---------------------------------------------------------------------------
+evaluation:
+  benchmark:
+    n_warmup: 10
+    n_measure: 50
+    batch_size: 32
+  biological:
+    k_neighbors: 15
+    n_cells: 1000
+
+# ---------------------------------------------------------------------------
+# 输出配置
+# ---------------------------------------------------------------------------
+output:
+  formats: [csv, json]
+  save_per_experiment: true
+  save_aggregated: true

@@ -1,0 +1,34 @@
+# scFoundation model configuration
+# Reference: Hao et al., "Large Scale Foundation Model on Single-cell
+# Transcriptomics", Nature Methods 2024.
+
+model:
+  name: "scfoundation"
+  type: "encoder_only"
+
+  # Architecture
+  n_layers: 12
+  n_heads: 8
+  embed_dim: 512
+  hidden_dim: 2048
+  vocab_size: 33539           # gene vocabulary (Ensembl gene symbols)
+  max_seq_len: 1536
+
+  # Input encoding
+  expression_bin: true         # binned expression input
+  n_bins: 512
+
+  # Checkpoint
+  checkpoint_path: null
+  checkpoint_repo: "scFoundation/scFoundation"
+
+  # Inference defaults
+  batch_size: 64
+  dtype: "float16"
+
+  # Supported optimizations
+  supported_optimizations:
+    - "quantization"
+    - "flash_attention"
+    - "torch_compile"
+    - "batch_scheduling"

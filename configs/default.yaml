@@ -1,0 +1,53 @@
+# scInfer default configuration
+# This file defines the global defaults that are merged with model-specific
+# and user-provided overrides at runtime.
+
+# ---------------------------------------------------------------------------
+# Global settings
+# ---------------------------------------------------------------------------
+global:
+  seed: 42
+  device: "auto"            # "auto" | "cpu" | "cuda" | "cuda:0" ...
+  dtype: "float16"          # "float16" | "bfloat16" | "float32"
+  num_workers: 4
+  verbose: "INFO"           # "DEBUG" | "INFO" | "WARNING" | "ERROR"
+
+# ---------------------------------------------------------------------------
+# Model selection  (overridden by configs/models/*.yaml)
+# ---------------------------------------------------------------------------
+model:
+  name: "scgpt"
+  checkpoint_path: null     # path to pretrained weights; null = auto-download
+  batch_size: 64
+  max_seq_len: 1024
+
+# ---------------------------------------------------------------------------
+# Optimization pipeline  (overridden by configs/optimization/*.yaml)
+# ---------------------------------------------------------------------------
+optimization:
+  enabled: true
+  engines: []               # list of engine names, e.g. ["quantization", "flash_attention"]
+  priority: []              # execution order; empty = default order
+
+# ---------------------------------------------------------------------------
+# Evaluation
+# ---------------------------------------------------------------------------
+evaluation:
+  run_benchmark: false
+  run_profiling: false
+  metrics:
+    inference:
+      - "throughput"
+      - "latency_p50"
+      - "latency_p99"
+      - "peak_memory_mb"
+    biological: []          # populated per-task, e.g. ["ari", "nmi"]
+
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+output:
+  dir: "./results"
+  save_embeddings: true
+  save_report: true
+  report_format: "json"     # "json" | "yaml" | "html"

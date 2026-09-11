@@ -1,0 +1,36 @@
+# Quantization optimization configuration
+# Supports INT8 (W8A8) and INT4 (GPTQ/AWQ) weight quantization.
+
+optimization:
+  engines:
+    - name: "quantization"
+      enabled: true
+
+  quantization:
+    # Quantization method: "int8" | "int4" | "gptq" | "awq"
+    method: "int8"
+
+    # INT8 settings (bitsandbytes LLM.int8())
+    int8:
+      threshold: 6.0           # outlier threshold for mixed-precision decomposition
+      skip_modules: []         # module names to skip quantization, e.g. ["lm_head"]
+
+    # INT4 settings (GPTQ)
+    int4:
+      bits: 4
+      group_size: 128
+      damp_percent: 0.1
+      desc_act: false
+      sym: true                # symmetric quantization
+      calibration_samples: 128
+      calibration_dataset: "c4"
+
+    # AWQ settings
+    awq:
+      bits: 4
+      group_size: 128
+      calibration_samples: 128
+
+    # Validation
+    validate_fidelity: true    # check biological metrics after quantization
+    fidelity_threshold: 0.95   # minimum acceptable correlation with FP32 output

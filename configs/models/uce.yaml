@@ -1,0 +1,34 @@
+# UCE (Universal Cell Embedding) model configuration
+# Reference: Rosen et al., "A universal embedding space for single-cell biology",
+# bioRxiv 2024.
+
+model:
+  name: "uce"
+  type: "encoder_only"
+
+  # Architecture
+  n_layers: 12
+  n_heads: 8
+  embed_dim: 1280
+  hidden_dim: 5120
+  vocab_size: 25426           # protein sequence vocabulary
+  max_seq_len: 2048
+
+  # Input encoding
+  use_protein_embeddings: true   # UCE uses protein-level embeddings as input
+  protein_embedding_dim: 5120
+
+  # Checkpoint
+  checkpoint_path: null
+  checkpoint_repo: "snap-stanford/uce"
+
+  # Inference defaults
+  batch_size: 32
+  dtype: "float32"
+
+  # Supported optimizations
+  supported_optimizations:
+    - "quantization"
+    - "flash_attention"
+    - "torch_compile"
+    - "batch_scheduling"

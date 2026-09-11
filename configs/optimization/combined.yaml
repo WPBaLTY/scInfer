@@ -1,0 +1,40 @@
+# Combined optimization configuration
+# Demonstrates how to compose multiple optimization engines into a single
+# pipeline.  Order matters: quantization is applied first (reduces memory),
+# then FlashAttention (speeds up attention), then torch.compile (fuses ops).
+
+optimization:
+  engines:
+    - name: "quantization"
+      enabled: true
+    - name: "flash_attention"
+      enabled: true
+    - name: "compilation"
+      enabled: true
+
+  # Execution order — lower index = applied first
+  priority:
+    - "quantization"
+    - "flash_attention"
+    - "compilation"
+
+  # Per-engine settings (merged with individual engine configs)
+  quantization:
+    method: "int8"
+
+  flash_attention:
+    version: "auto"
+    causal: false
+
+  compilation:
+    mode: "reduce-overhead"    # torch.compile mode: "default" | "reduce-overhead" | "max-autotune"
+    fullgraph: false           # set true only if model has no graph breaks
+    dynamic: false             # dynamic shape support
+
+  # Global validation
+  validate_fidelity: true
+  fidelity_threshold: 0.95
+
+  # Resource budget
+  max_memory_gb: null          # null = no limit; otherwise abort if exceeded
+  target_speedup: 2.0          # informational target; not enforced

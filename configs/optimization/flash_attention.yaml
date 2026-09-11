@@ -1,0 +1,30 @@
+# FlashAttention optimization configuration
+# Replaces standard scaled dot-product attention with FlashAttention-2
+# for memory-efficient and faster attention computation.
+
+optimization:
+  engines:
+    - name: "flash_attention"
+      enabled: true
+
+  flash_attention:
+    # FlashAttention version: "auto" | "2" | "3"
+    version: "auto"
+
+    # Attention parameters
+    causal: false              # single-cell models typically use bidirectional attention
+    dropout: 0.0               # disable dropout during inference
+    softmax_scale: null        # null = 1/sqrt(head_dim)
+
+    # Tiling / memory
+    block_size: 128            # FlashAttention block size for tiling
+    use_flash_attn_varlen: false  # use variable-length sequence mode for batched inference
+
+    # Compatibility
+    require_gpu: true          # FlashAttention requires Ampere+ GPU (sm_80+)
+    min_compute_capability: 8.0
+
+    # Validation
+    validate_fidelity: true
+    atol: 1.0e-4               # absolute tolerance vs. standard attention
+    rtol: 1.0e-3               # relative tolerance

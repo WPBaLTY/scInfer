@@ -1,0 +1,34 @@
+# scGPT model configuration
+# Reference: Cui et al., "scGPT: toward building a foundation model for single-cell
+# multi-omics using generative AI", Nature Methods 2024.
+
+model:
+  name: "scgpt"
+  type: "encoder_only"
+
+  # Architecture
+  n_layers: 12
+  n_heads: 8
+  embed_dim: 512
+  hidden_dim: 2048
+  vocab_size: 60697          # gene vocabulary size (including <pad>, <cls>, <eos>)
+  max_seq_len: 1536
+
+  # Input encoding
+  use_batch_labels: true
+  n_batch_labels: 8
+
+  # Checkpoint
+  checkpoint_path: null      # auto-download from HuggingFace if null
+  checkpoint_repo: "scGPT/scGPT"
+
+  # Inference defaults
+  batch_size: 64
+  dtype: "float16"
+
+  # Supported optimizations
+  supported_optimizations:
+    - "quantization"
+    - "flash_attention"
+    - "torch_compile"
+    - "batch_scheduling"

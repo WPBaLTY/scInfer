@@ -1,0 +1,108 @@
+# 量化实验配置
+# 系统量化实验：评估不同量化方法对单细胞基础模型的影响
+# 对应论文 Figure 3
+
+experiment:
+  name: "systematic_quantization"
+  description: "系统量化实验：对比 INT8/INT4 量化方法对推理速度、内存占用和生物学保真度的影响"
+  output_dir: "results/quantization/"
+  seed: 42
+  device: "auto"
+
+# ---------------------------------------------------------------------------
+# 模型配置
+# ---------------------------------------------------------------------------
+models:
+  scgpt:
+    checkpoint: null          # null = 自动下载
+    sizes: [53m]
+    embed_dim: 512
+    n_layers: 12
+    n_heads: 8
+    max_seq_len: 1024
+
+  geneformer:
+    checkpoint: null
+    sizes: [10m, 38m, 316m]
+    embed_dim: 256            # 10m/38m
+    embed_dim_316m: 1280      # 316m 模型
+    n_layers: 6               # 10m/38m
+    n_layers_316m: 32         # 316m 模型
+    max_seq_len: 2048
+
+  scfoundation:
+    checkpoint: null
+    sizes: [121m]
+    embed_dim: 512
+    n_layers: 12
+    max_seq_len: 1024
+
+# ---------------------------------------------------------------------------
+# 量化方法配置
+# ---------------------------------------------------------------------------
+quantization:
+  methods:
+    - name: bitsandbytes
+      bits: [4, 8]
+      description: "BitsAndBytes LLM.int8() / NF4 混合精度量化"
+      config:
+        llm_int8_threshold: 6.0
+        llm_int8_skip_modules: ["lm_head"]  # 跳过输出层以保持精度
+
+    - name: gptq
+      bits: [4, 8]
+      description: "GPTQ 训练后量化（基于 Hessian 的逐层量化）"
+      config:
+        group_size: 128
+        act_order: true
+        damp_percent: 0.01
+        desc_act: true
+
+    - name: awq
+      bits: [4]
+      description: "AWQ 激活感知权重量化（保护显著权重）"
+      config:
+        zero_point: true
+        group_size: 128
+        n_grid: 20
+
+  # 校准数据配置
+  calibration:
+    datasets: [pbmc, pancreas, synthetic]
+    n_samples: 128
+    batch_size: 4
+    max_length: 512
+
+# ---------------------------------------------------------------------------
+# 评估指标
+# ---------------------------------------------------------------------------
+evaluation:
+  # 推理性能指标
+  metrics:
+    - throughput              # 吞吐量 (it/s)
+    - latency                 # 延迟 (ms/cell)
+    - peak_memory             # 峰值显存 (MB)
+    - model_size              # 模型大小 (MB)
+    - embedding_cosine_similarity  # Embedding 余弦相似度
+    - cell_type_f1            # 细胞注释 F1 分数
+    - knn_accuracy            # kNN 分类准确率
+
+  # 基准测试参数
+  benchmark:
+    n_warmup: 10
+    n_measure: 50
+    batch_size: 32
+
+  # 生物学验证
+  biological:
+    n_cells: 1000
+    k_neighbors: 15
+
+# ---------------------------------------------------------------------------
+# 输出配置
+# ---------------------------------------------------------------------------
+output:
+  formats: [csv, json]
+  save_embeddings: true
+  save_plots: false           # 由 notebook 生成图表
+  timestamp: true

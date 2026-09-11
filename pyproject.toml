@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scinfer"
+version = "1.0.0"
+description = "Systematic inference optimization framework for single-cell foundation models"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+requires-python = ">=3.9"
+authors = [
+    {name = "scInfer Team"},
+]
+keywords = [
+    "single-cell",
+    "foundation-model",
+    "inference-optimization",
+    "quantization",
+    "scgpt",
+    "geneformer",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0",
+    "scanpy>=1.9",
+    "anndata>=0.9",
+    "numpy>=1.23",
+    "pandas>=1.5",
+    "scipy>=1.9",
+    "pyyaml>=6.0",
+    "loguru>=0.7",
+    "tqdm>=4.64",
+    "typing-extensions>=4.0",
+]
+
+[project.optional-dependencies]
+# Per-model dependencies
+scgpt = ["scgpt"]
+geneformer = ["transformers>=4.34"]
+scfoundation = []  # Custom architecture
+uce = []  # Universal Cell Embedding
+all-models = ["scinfer[scgpt,geneformer,scfoundation,uce]"]
+# Optimization engine dependencies
+quantization = ["bitsandbytes>=0.41", "auto-gptq>=0.6"]
+attention = ["flash-attn>=2.0"]
+optimization = ["scinfer[quantization,attention]"]
+# Development dependencies
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.1",
+    "mypy>=1.0",
+    "pre-commit>=3.0",
+]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.0",
+]
+# Full installation
+all = ["scinfer[all-models,optimization,dev]"]
+
+[project.urls]
+Homepage = "https://github.com/scinfer/scinfer"      # TODO: update before release
+Repository = "https://github.com/scinfer/scinfer"      # TODO: update before release
+Issues = "https://github.com/scinfer/scinfer/issues"   # TODO: update before release
+
+[tool.setuptools.packages.find]
+include = ["scinfer*"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
